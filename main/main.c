@@ -2,32 +2,47 @@
 
 static const char *TAG = "main";
 
-
 /*
     TODO:
     - lcd_string_queue передавать в качестве параметра в задачи или как глобальную через extern?
     - превышение порога газа должно фиксироваться
     - mqtt, ws
-    - питание
+    + питание
+    - tg bot
+    - команда на рестарт по ws [опционально - новые параметры wifi]
+    - мигание или инфа на лед
+        - не подключен к wifi
+        - подключен к wifi
+        - установлена связь с сервером по ws
 */
-
 
 extern QueueHandle_t lcd_string_queue;
 extern QueueHandle_t ws_send_queue;
 
 void app_main(void)
-{ 
+{
     lcd_string_queue = xQueueCreate(10, sizeof(lcd_data_t));
     ws_send_queue = xQueueCreate(10, sizeof(lcd_data_t));
 
-
-
     esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
+
+    nvs_iterator_t it = NULL;
+    it = nvs_entry_find("nvs", NULL, NVS_TYPE_ANY);
+    while (it != NULL)
+    {
+        nvs_entry_info_t info;
+        nvs_entry_info(it, &info);
+        it = nvs_entry_next(it);
+        printf("key '%s', type '%02x' \n", info.key, info.type);
+    };
+    nvs_release_iterator(it);
+
     wifi_init_sta();
 
     ws_init();
@@ -40,9 +55,10 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
 
     // bmx280
-    bmx280_t* bmx280 = bmx280_create(I2C_NUM_1);
+    bmx280_t *bmx280 = bmx280_create(I2C_NUM_1);
 
-    if (!bmx280) { 
+    if (!bmx280)
+    {
         ESP_LOGE("test", "Could not create bmx280 driver.");
         return;
     }
@@ -53,8 +69,6 @@ void app_main(void)
     ESP_ERROR_CHECK(bmx280_configure(bmx280, &bmx_cfg));
 
     mq135_init(ADC_CHANNEL_0, GPIO_NUM_27);
-
-
 
     // lcd
     // TODO: не возвращает ошибку???
@@ -74,8 +88,8 @@ void app_main(void)
     xTaskCreate(ws_send_task, "ws_send_task", 4096, NULL, 2, NULL);
     // configMAX_PRIORITIES - максимальный приоритет
 
-    while(1) {
+    while (1)
+    {
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
-
 }

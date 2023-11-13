@@ -3,7 +3,7 @@
 #include "wifi.h"
 
 #define WIFI_SSID      "MGTS_GPON_5F1C"
-// #define WIFI_SSID      "HONOR 20S"
+// #define WIFI_SSID_DEFAULT      "HONOR 20S"
 #define WIFI_PASS      "5AYJ69HK"
 // #define WIFI_PASS      "88888888"
 #define MAXIMUM_RETRY  5
@@ -46,6 +46,34 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 
 void wifi_init_sta(void)
 {
+    nvs_handle_t nvs_handle;
+    ESP_ERROR_CHECK(nvs_open("app.storage", NVS_READWRITE, &nvs_handle));
+
+    char ssid[32];
+    char password[64];
+    size_t ssid_len = sizeof(ssid);
+    size_t password_len = sizeof(password);
+
+    esp_err_t ssid_err = nvs_get_str(nvs_handle, "app.wifi.ssid", ssid, &ssid_len);
+    esp_err_t pass_err = nvs_get_str(nvs_handle, "app.wifi.pass", password, &password_len);
+
+    if (ssid_err != ESP_OK || pass_err != ESP_OK) {
+        ESP_LOGI(TAG, "ssid and pass are not in nvs");
+
+
+        strcpy(ssid, WIFI_SSID);
+        strcpy(password, WIFI_PASS);
+
+        nvs_set_str(nvs_handle, "app.wifi.ssid", ssid);
+        nvs_set_str(nvs_handle, "app.wifi.pass", password);
+        nvs_commit(nvs_handle);
+    } else {
+        ESP_LOGI(TAG, "ssid and pass are in nvs: %s, %s", ssid, password);
+    }
+
+    nvs_close(nvs_handle);
+
+
     s_wifi_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -71,8 +99,6 @@ void wifi_init_sta(void)
 
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = WIFI_SSID,
-            .password = WIFI_PASS,
             /* Authmode threshold resets to WPA2 as default if password matches WPA2 standards (pasword len => 8).
              * If you want to connect the device to deprecated WEP/WPA networks, Please set the threshold value
              * to WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK and set the password with length and format matching to
@@ -82,6 +108,10 @@ void wifi_init_sta(void)
             .sae_pwe_h2e = WPA3_SAE_PWE_BOTH,
         },
     };
+
+    strcpy((char *)wifi_config.sta.ssid, ssid);
+    strcpy((char *)wifi_config.sta.password, password);
+
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     // without this: Brownout detector was triggered
     ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
