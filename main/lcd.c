@@ -6,7 +6,7 @@ esp_err_t err;
 extern QueueHandle_t lcd_string_queue = NULL;
 
 #define SLAVE_ADDRESS_LCD 0x4E>>1
-static const char *TAG = "lcd";
+static const char *TAG = "LCD";
 
 void lcd_send_cmd(char cmd)
 {

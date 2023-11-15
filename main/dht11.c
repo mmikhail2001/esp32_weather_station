@@ -10,6 +10,8 @@ static gpio_num_t dht_gpio;
 static int64_t last_read_time = -2000000;
 static struct dht11_reading last_read;
 
+static const char *TAG = "DHT11";
+
 static int _waitOrTimeout(uint16_t microSeconds, int level) {
     int micros_ticks = 0;
     while(gpio_get_level(dht_gpio) == level) { 
@@ -111,29 +113,28 @@ void dht11_read_task(void *arg) {
             .humidity = DHT11_read().humidity
         };
         // log
-        printf("Temperature is %d \n", DHT11_read().temperature);
-        printf("Humidity is %d\n", DHT11_read().humidity);
-        printf("Status code is %d\n", DHT11_read().status);
+        // ESP_LOGI(TAG, "Temperature is %d \n", DHT11_read().temperature);
+        // ESP_LOGI(TAG, "Humidity is %d\n", DHT11_read().humidity);
+        // ESP_LOGI(TAG, "Status code is %d\n", DHT11_read().status);
 
         
         lcd_data.col = 0;
-
         // temp
         lcd_data.row = 0;
-        sprintf(lcd_data.str, "temp %d\n", sensor_data.temperature);
+        sprintf(lcd_data.str, "temp %d", sensor_data.temperature);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
 
         // hum
         lcd_data.row = 1;
-        sprintf(lcd_data.str, "hum  %d\n", sensor_data.humidity);
+        sprintf(lcd_data.str, "hum  %d", sensor_data.humidity);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
         
         
         // cnt
         lcd_data.row = 2;
-        sprintf(lcd_data.str, "cnt  %d\n", cnt);
+        sprintf(lcd_data.str, "cnt  %d", cnt);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
         

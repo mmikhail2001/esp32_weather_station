@@ -6,12 +6,16 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
-#include "nvs.h"
+#include "esp_wifi.h"
+
 
 #include "i2c.h"
 #include "lcd.h"
 #include "dht11.h"
-#include "wifi.h"
+#include "wifi_ap.h"
+#include "wifi_sta.h"
 #include "bmx280.h"
 #include "mq135.h"
 #include "ws.h"
+#include "http_server.h"
+

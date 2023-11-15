@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <string.h>
 
+static const char *TAG = "BMP280";
+
 // [BME280] Register address of humidity least significant byte.
 #define BMX280_REG_HUMI_LSB 0xFE
 // [BME280] Register address of humidity most significant byte.
@@ -567,25 +569,25 @@ void bmx280_read_task(void *arg) {
 
         // lcd_string_queue
 
-        ESP_LOGI("test", "Read Values: temp = %f, pres = %f, hum = %f", temp, pres, hum);
+        // ESP_LOGI(TAG, "Read Values: temp = %f, pres = %f, hum = %f", temp, pres, hum);
 
         lcd_data.col = 9;
 
         // temp
         lcd_data.row = 0;
-        sprintf(lcd_data.str, "temp %.1f\n", temp);
+        sprintf(lcd_data.str, "temp %.1f", temp);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
 
         // pres
         lcd_data.row = 1;
-        sprintf(lcd_data.str, "pres %.0f\n", pres);
+        sprintf(lcd_data.str, "pres %.0f", pres);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
         
         // cnt
         lcd_data.row = 2;
-        sprintf(lcd_data.str, "cnt %d\n", cnt);
+        sprintf(lcd_data.str, "cnt %d", cnt);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
         

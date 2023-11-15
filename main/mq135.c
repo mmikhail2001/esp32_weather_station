@@ -4,6 +4,8 @@ static esp_adc_cal_characteristics_t adc1_chars;
 static adc_channel_t pin_analog;
 static gpio_num_t pin_digital;
 
+static const char *TAG = "MQ135";
+
 void mq135_init(adc_channel_t apin, gpio_num_t gpin) {
     pin_analog = apin;
     pin_digital = gpin;
@@ -13,7 +15,6 @@ void mq135_init(adc_channel_t apin, gpio_num_t gpin) {
     ESP_ERROR_CHECK(adc1_config_channel_atten(pin_analog, ADC_ATTEN_DB_11));
 
     gpio_config_t io_conf;
-    // Настройка пина для режима ввода
     io_conf.pin_bit_mask = (1ULL << pin_digital);
     io_conf.mode = GPIO_MODE_INPUT;
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
@@ -34,9 +35,8 @@ void mq135_read_task(void *arg) {
         int no_threshold = gpio_get_level(pin_digital);
         uint32_t voltage = adc1_get_raw(pin_analog);
 
-        printf("gas value: %d, good %d\n", voltage, no_threshold);
-
-        sprintf(lcd_data.str, "gas %3d, good %d\n", voltage, no_threshold);
+        // ESP_LOGI(TAG, "gas value: %d", voltage);
+        sprintf(lcd_data.str, "gas[%d] %3d", no_threshold, voltage);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
