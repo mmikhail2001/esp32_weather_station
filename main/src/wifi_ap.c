@@ -2,11 +2,12 @@
 
 static const char *TAG = "WIFI_AP";
 
-#define AP_SSID "ESP32-AP"
+#define AP_SSID "ESP32-AP-WIFI"
 #define AP_PASS "12345678"
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
+    // TODO: http_server событие исчезает
     if (event_id == WIFI_EVENT_AP_STACONNECTED)
     {
         xEventGroupSetBits(net_event_group, AP_CONNECTED);
@@ -22,10 +23,28 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
     else if (event_id == WIFI_EVENT_AP_START) 
     {
         ESP_LOGI(TAG, "event WIFI_EVENT_AP_START");
+
+        lcd_data_t lcd_data;
+        lcd_data.col = 10;
+        lcd_data.row = 2;
+        sprintf(lcd_data.str, "p:%s", AP_PASS);
+        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+
+        lcd_data.row = 3;
+        sprintf(lcd_data.str, "ip    .4.1");
+        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
     }
     else if (event_id == WIFI_EVENT_AP_STOP) 
     {
         ESP_LOGI(TAG, "event WIFI_EVENT_AP_STOP");
+
+        lcd_data_t lcd_data;
+        lcd_data.col = 10;
+        lcd_data.row = 2;
+        memset(lcd_data.str, ' ', 10);
+        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+        lcd_data.row = 3;
+        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
     }
 }
 

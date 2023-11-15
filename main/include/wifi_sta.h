@@ -12,7 +12,10 @@
 #include "nvs_flash.h"
 
 #include "display_events.h"
+#include "lcd.h"
 
 extern EventGroupHandle_t net_event_group;
+extern QueueHandle_t lcd_string_queue;
+extern QueueHandle_t lcd_string_queue;
 
 void wifi_init_sta(void);

@@ -36,7 +36,7 @@ void mq135_read_task(void *arg) {
         uint32_t voltage = adc1_get_raw(pin_analog);
 
         // ESP_LOGI(TAG, "gas value: %d", voltage);
-        sprintf(lcd_data.str, "gas %3d, %1d", voltage, no_threshold);
+        sprintf(lcd_data.str, "gas %3d,%1d", voltage, no_threshold);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
