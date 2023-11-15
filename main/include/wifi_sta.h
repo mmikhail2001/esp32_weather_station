@@ -16,6 +16,5 @@
 
 extern EventGroupHandle_t net_event_group;
 extern QueueHandle_t lcd_string_queue;
-extern QueueHandle_t lcd_string_queue;
 
 void wifi_init_sta(void);

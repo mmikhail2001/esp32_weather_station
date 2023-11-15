@@ -22,6 +22,15 @@ static const char *TAG = "main";
             - пароль от устройства
             - новый ssid
             - новый password
+    - изменить событийную систему на эту
+        - sta_connected
+        - sta_disconnected
+        - ws_connected
+        - ws_disconnected
+        - ap_start
+        - ap_end
+        - new_device_connected
+        - device_disconnected
 */
 
 extern QueueHandle_t lcd_string_queue;

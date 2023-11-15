@@ -1,0 +1,46 @@
+<html>
+<head>
+    <title>ESP32</title>
+</head>
+<body>
+    <form onsubmit="submitForm(event)">
+        New SSID: <input type="text" name="ssid"><br>
+        Password: <input type="password" name="password"><br>
+        Access key: <input type="password" name="access_key"><br>
+        <input type="submit" value="Submit">
+    </form>
+    <div id="message"></div>
+    <script>
+        function submitForm(event) {
+            event.preventDefault();
+            const ssid = document.getElementsByName('ssid')[0].value;
+            const password = document.getElementsByName('password')[0].value;
+            const access_key = document.getElementsByName('access_key')[0].value;
+            const messageElement = document.getElementById('message');
+            fetch('/login?ssid=' + encodeURIComponent(ssid) + '&password=' + encodeURIComponent(password) + '&access_key=' + encodeURIComponent(access_key))
+                .then(response => {
+                    alert(response.status);
+                    if (response.status === 200) {
+                        messageElement.innerHTML = 'Data applied successfully.';
+                        messageElement.style.backgroundColor = 'green';
+                        setTimeout(function () {
+                            messageElement.innerHTML = '';
+                        }, 3000);
+                    } else if (response.status === 403) {
+                        messageElement.innerHTML = 'The key is incorrect';
+                        messageElement.style.backgroundColor = 'red';
+                        setTimeout(function () {
+                            messageElement.innerHTML = '';
+                        }, 3000);
+                    } else {
+                        document.getElementById('message').innerHTML = 'Data not applied';
+                        messageElement.style.backgroundColor = 'red';
+                        setTimeout(function () {
+                            messageElement.innerHTML = '';
+                        }, 3000);
+                    }
+                })
+           }
+    </script>
+</body>
+</html>
