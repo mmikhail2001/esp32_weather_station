@@ -571,25 +571,29 @@ void bmx280_read_task(void *arg) {
 
         // ESP_LOGI(TAG, "Read Values: temp = %f, pres = %f, hum = %f", temp, pres, hum);
 
-        lcd_data.col = 9;
+        lcd_data.col = 0;
 
         // temp
         lcd_data.row = 0;
-        sprintf(lcd_data.str, "temp %.1f", temp);
+        if (cnt % 2) {
+            sprintf(lcd_data.str, "tmp.%.1f", temp);
+        } else {
+            sprintf(lcd_data.str, "tmp %.1f", temp);
+        }
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
 
         // pres
-        lcd_data.row = 1;
-        sprintf(lcd_data.str, "pres %.0f", pres);
+        lcd_data.row = 2;
+        sprintf(lcd_data.str, "prs %.0f", pres);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
-        vTaskDelay(300 / portTICK_PERIOD_MS);
+        // vTaskDelay(300 / portTICK_PERIOD_MS);
         
         // cnt
-        lcd_data.row = 2;
-        sprintf(lcd_data.str, "cnt %d", cnt);
-        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
-        vTaskDelay(300 / portTICK_PERIOD_MS);
+        // lcd_data.row = 2;
+        // sprintf(lcd_data.str, "cnt %d", cnt);
+        // xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+        // vTaskDelay(300 / portTICK_PERIOD_MS);
         
         // delay
         cnt++;

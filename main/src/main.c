@@ -6,14 +6,22 @@ static const char *TAG = "main";
     TODO:
     - lcd_string_queue передавать в качестве параметра в задачи или как глобальную через extern?
     - превышение порога газа должно фиксироваться
-    - mqtt, ws
+    + ws
+        - передача в заголовке device_id
     + питание
     - tg bot
-    - команда на рестарт по ws [опционально - новые параметры wifi]
+    - команда на рестарт по ws
     - мигание или инфа на лед
         - не подключен к wifi
         - подключен к wifi
         - установлена связь с сервером по ws
+    + wifi ap и http сервер
+    - http сервер передача
+        - показать текущий wifi ssid
+        - при необходимости изменить ssid нужно ввести
+            - пароль от устройства
+            - новый ssid
+            - новый password
 */
 
 extern QueueHandle_t lcd_string_queue;
@@ -40,6 +48,9 @@ static void button_switch_wifi_ap_sta_task(void *arg)
             {
                 ws_stop();
                 esp_wifi_stop();
+                xEventGroupClearBits(net_event_group, STA_CONNECTED);
+                xEventGroupClearBits(net_event_group, WS_SENDING);
+                
                 // TODO: не выводится
                 esp_netif_ip_info_t ip_info;
                 ESP_ERROR_CHECK(esp_netif_get_ip_info(netif_wifi_ap, &ip_info));
@@ -54,6 +65,10 @@ static void button_switch_wifi_ap_sta_task(void *arg)
             {
                 esp_wifi_stop();
                 httpd_stop(server);
+
+                xEventGroupClearBits(net_event_group, AP_CONNECTED);
+                xEventGroupClearBits(net_event_group, HTTP_STARTED);
+
                 wifi_ap_active = false;
                 wifi_init_sta();
                 ws_start();
@@ -100,6 +115,11 @@ void app_main(void)
     lcd_string_queue = xQueueCreate(10, sizeof(lcd_data_t));
     ws_send_queue = xQueueCreate(10, sizeof(lcd_data_t));
     button_queue = xQueueCreate(10, sizeof(uint32_t));
+
+    // eventGroups
+
+    net_event_group = xEventGroupCreate();
+    xEventGroupSetBits(net_event_group, DEFAULT_SET);
 
     // nvs
 
@@ -169,7 +189,16 @@ void app_main(void)
     xTaskCreate(mq135_read_task, "mq135_read_task", 2048, NULL, 2, NULL);
     xTaskCreate(ws_send_task, "ws_send_task", 4096, NULL, 2, NULL);
     xTaskCreate(button_switch_wifi_ap_sta_task, "button_task", 4096, NULL, 10, NULL);
+    xTaskCreate(display_info_task, "display_info_task", 4096, NULL, 10, NULL);
     // configMAX_PRIORITIES - максимальный приоритет
+
+    // lcd info
+    lcd_data_t lcd_data;
+    lcd_data.col = 10;
+    lcd_data.row = 0;
+    sprintf(lcd_data.str, "sta/ap");
+    xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+    vTaskDelay(300 / portTICK_PERIOD_MS);
 
     // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/misc_system_api.html#:~:text=To%20perform%20software%20reset%20of,is%20triggered%20by%20esp_restart())%20occurs
     // esp_restart()

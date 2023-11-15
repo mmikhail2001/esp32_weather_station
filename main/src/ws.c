@@ -12,9 +12,11 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_DISCONNECTED:
+        xEventGroupClearBits(net_event_group, WS_SENDING);
         ESP_LOGI(TAG, "event WEBSOCKET_EVENT_DISCONNECTED");
         break;
     case WEBSOCKET_EVENT_CONNECTED:
+        xEventGroupSetBits(net_event_group, WS_SENDING);
         ESP_LOGI(TAG, "event WEBSOCKET_EVENT_CONNECTED");
         break;
     case WEBSOCKET_EVENT_DATA:
@@ -22,6 +24,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         ESP_LOGW(TAG, "Received=%.*s\n", data->data_len, (char *)data->data_ptr);
         break;
     case WEBSOCKET_EVENT_CLOSED:
+        xEventGroupClearBits(net_event_group, WS_SENDING);
         ESP_LOGI(TAG, "event WEBSOCKET_EVENT_CLOSED");
         break;
     }

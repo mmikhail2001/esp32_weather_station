@@ -11,4 +11,8 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 
+#include "display_events.h"
+
+extern EventGroupHandle_t net_event_group;
+
 void wifi_init_sta(void);

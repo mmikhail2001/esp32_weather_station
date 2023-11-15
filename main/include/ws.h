@@ -17,8 +17,10 @@
 #include "esp_event.h"
 
 #include "lcd.h"
+#include "display_events.h"
 
 extern QueueHandle_t ws_send_queue;
+extern EventGroupHandle_t net_event_group;
 
 void ws_send_task(void);
 void ws_init();

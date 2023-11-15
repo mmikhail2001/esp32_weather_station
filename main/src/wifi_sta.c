@@ -2,10 +2,11 @@
 // #include "lwip/sys.h"
 #include "wifi_sta.h"
 
-#define WIFI_SSID      "MGTS_GPON_5F1C"
-// #define WIFI_SSID_DEFAULT      "HONOR 20S"
-#define WIFI_PASS      "5AYJ69HK"
-// #define WIFI_PASS      "88888888"
+// #define WIFI_SSID      "MGTS_GPON_5F1C"
+#define WIFI_SSID      "HONOR 20S"
+// #define WIFI_PASS      "5AYJ69HK"
+#define WIFI_PASS      "88888888"
+#define DEFAULT_FORCE      1
 #define MAXIMUM_RETRY  5
 
 /* FreeRTOS event group to signal when we are connected*/
@@ -25,11 +26,13 @@ static int s_retry_num = 0;
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
+    ESP_LOGI(TAG, "event WIFI.......");
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         ESP_LOGI(TAG, "event WIFI_EVENT_STA_START");
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         ESP_LOGI(TAG, "event WIFI_EVENT_STA_DISCONNECTED");
+        xEventGroupClearBits(net_event_group, STA_CONNECTED);
         if (s_retry_num < MAXIMUM_RETRY) {
             esp_wifi_connect();
             s_retry_num++;
@@ -40,6 +43,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         }
         ESP_LOGI(TAG,"connect to the AP fail");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        xEventGroupSetBits(net_event_group, STA_CONNECTED);
         ESP_LOGI(TAG, "event IP_EVENT_STA_GOT_IP");
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
@@ -98,6 +102,8 @@ void wifi_init_sta(void)
 
     wifi_config_t wifi_config = {
         .sta = {
+            .ssid = WIFI_SSID,
+            .password = WIFI_PASS,
             /* Authmode threshold resets to WPA2 as default if password matches WPA2 standards (pasword len => 8).
              * If you want to connect the device to deprecated WEP/WPA networks, Please set the threshold value
              * to WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK and set the password with length and format matching to
@@ -108,8 +114,13 @@ void wifi_init_sta(void)
         },
     };
 
-    strcpy((char *)wifi_config.sta.ssid, ssid);
-    strcpy((char *)wifi_config.sta.password, password);
+    if (!DEFAULT_FORCE) {
+    //     wifi_config.sta.ssid = WIFI_SSID;
+    //     wifi_config.sta.password = WIFI_PASS;
+    // } else {
+        strcpy((char *)wifi_config.sta.ssid, ssid);
+        strcpy((char *)wifi_config.sta.password, password);
+    }
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     // without this: Brownout detector was triggered

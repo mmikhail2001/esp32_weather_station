@@ -18,4 +18,7 @@
 #include "mq135.h"
 #include "ws.h"
 #include "http_server.h"
+#include "display_events.h"
+
+extern EventGroupHandle_t net_event_group;
 

@@ -9,13 +9,23 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
 {
     if (event_id == WIFI_EVENT_AP_STACONNECTED)
     {
+        xEventGroupSetBits(net_event_group, AP_CONNECTED);
         wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
         ESP_LOGI(TAG, "station " MACSTR " join, AID=%d", MAC2STR(event->mac), event->aid);
     }
     else if (event_id == WIFI_EVENT_AP_STADISCONNECTED)
     {
+        xEventGroupClearBits(net_event_group, AP_CONNECTED);
         wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
         ESP_LOGI(TAG, "station " MACSTR " leave, AID=%d", MAC2STR(event->mac), event->aid);
+    } 
+    else if (event_id == WIFI_EVENT_AP_START) 
+    {
+        ESP_LOGI(TAG, "event WIFI_EVENT_AP_START");
+    }
+    else if (event_id == WIFI_EVENT_AP_STOP) 
+    {
+        ESP_LOGI(TAG, "event WIFI_EVENT_AP_STOP");
     }
 }
 

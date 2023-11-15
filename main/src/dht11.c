@@ -120,23 +120,23 @@ void dht11_read_task(void *arg) {
         
         lcd_data.col = 0;
         // temp
-        lcd_data.row = 0;
-        sprintf(lcd_data.str, "temp %d", sensor_data.temperature);
-        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
-        vTaskDelay(300 / portTICK_PERIOD_MS);
+        // lcd_data.row = 0;
+        // sprintf(lcd_data.str, "temp %d", sensor_data.temperature);
+        // xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+        // vTaskDelay(300 / portTICK_PERIOD_MS);
 
         // hum
         lcd_data.row = 1;
-        sprintf(lcd_data.str, "hum  %d", sensor_data.humidity);
+        sprintf(lcd_data.str, "hum %d", sensor_data.humidity);
         xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
         vTaskDelay(300 / portTICK_PERIOD_MS);
         
         
         // cnt
-        lcd_data.row = 2;
-        sprintf(lcd_data.str, "cnt  %d", cnt);
-        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
-        vTaskDelay(300 / portTICK_PERIOD_MS);
+        // lcd_data.row = 2;
+        // sprintf(lcd_data.str, "cnt  %d", cnt);
+        // xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+        // vTaskDelay(300 / portTICK_PERIOD_MS);
         
         // delay
         cnt++;

@@ -12,4 +12,7 @@
 #include <freertos/task.h>
 #include "freertos/timers.h"
 
+#include "display_events.h"
+
 httpd_handle_t start_http_server();
+extern EventGroupHandle_t net_event_group;

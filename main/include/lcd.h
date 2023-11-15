@@ -9,6 +9,7 @@ typedef struct {
     char str[20];
 } lcd_data_t;
 
+// TODO: уже есть в файле ws.h
 extern QueueHandle_t ws_send_queue;
 extern QueueHandle_t lcd_string_queue;
 

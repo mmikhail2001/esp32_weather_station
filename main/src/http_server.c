@@ -115,6 +115,8 @@ httpd_handle_t start_http_server()
     ESP_ERROR_CHECK(httpd_register_uri_handler(server, &root));
     ESP_ERROR_CHECK(httpd_register_uri_handler(server, &login_uri));
 
+    xEventGroupSetBits(net_event_group, HTTP_STARTED);
+
     ESP_LOGI(TAG, "HTTP server started");
 
     return server;
