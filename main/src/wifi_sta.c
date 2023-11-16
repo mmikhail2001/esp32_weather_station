@@ -4,9 +4,9 @@
 
 #define WIFI_SSID      "MGTS_GPON_5F1C"
 // #define WIFI_SSID      "HONOR 20S"
-#define WIFI_PASS      "5AYJ69HK"
 // #define WIFI_PASS      "88888888"
-#define DEFAULT_FORCE      1
+#define WIFI_PASS      "5AYJ69HK"
+#define DEFAULT_FORCE      0
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;

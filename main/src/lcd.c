@@ -120,7 +120,7 @@ void lcd_process_queue_task(void *arg)
         {
             lcd_set_pos(lcd_data.row, lcd_data.col);
             lcd_send_string(lcd_data.str);
-			xQueueSendToBack(ws_send_queue, &lcd_data, 0);
+			xQueueSendToBack(ws_send_queue, &lcd_data.str, 0);
         }
     }
 }

@@ -31,6 +31,7 @@ static const char *TAG = "main";
         - ap_end
         - new_device_connected
         - device_disconnected
+    - при post запросе формы можно не перезагружать МК
 */
 
 extern QueueHandle_t lcd_string_queue;
@@ -102,7 +103,7 @@ static void IRAM_ATTR button_isr_handler(void *arg)
 
 void app_main(void)
 {
-
+    esp_err_t ret;
     // button isr 
 
     gpio_set_direction(GPIO_NUM_26, GPIO_MODE_INPUT);
@@ -130,9 +131,22 @@ void app_main(void)
     net_event_group = xEventGroupCreate();
     xEventGroupSetBits(net_event_group, DEFAULT_SET);
 
+    // i2c
+    ret = i2c_init_master(I2C_NUM_0, GPIO_NUM_21, GPIO_NUM_22);
+    ESP_ERROR_CHECK(ret);
+
+    ret = i2c_init_master(I2C_NUM_1, GPIO_NUM_33, GPIO_NUM_32);
+    ESP_ERROR_CHECK(ret);
+
+    // lcd
+    // TODO: не возвращает ошибку???
+    lcd_init();
+    lcd_clear();
+    vTaskDelay(300 / portTICK_PERIOD_MS);
+
     // nvs
 
-    esp_err_t ret = nvs_flash_init();
+    ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -153,13 +167,6 @@ void app_main(void)
 
     ESP_LOGI(TAG, "Wifi STA init");
 
-    // i2c
-    ret = i2c_init_master(I2C_NUM_0, GPIO_NUM_21, GPIO_NUM_22);
-    ESP_ERROR_CHECK(ret);
-
-    ret = i2c_init_master(I2C_NUM_1, GPIO_NUM_33, GPIO_NUM_32);
-    ESP_ERROR_CHECK(ret);
-
     // bmx280
     bmx280_t *bmx280 = bmx280_create(I2C_NUM_1);
 
@@ -176,12 +183,6 @@ void app_main(void)
 
     // mq135
     mq135_init(ADC_CHANNEL_0, GPIO_NUM_27);
-
-    // lcd
-    // TODO: не возвращает ошибку???
-    lcd_init();
-    lcd_clear();
-    vTaskDelay(300 / portTICK_PERIOD_MS);
 
     // dht11
     DHT11_init(GPIO_NUM_23);
@@ -209,8 +210,6 @@ void app_main(void)
     xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
     vTaskDelay(300 / portTICK_PERIOD_MS);
 
-    // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/misc_system_api.html#:~:text=To%20perform%20software%20reset%20of,is%20triggered%20by%20esp_restart())%20occurs
-    // esp_restart()
     while (1)
     {
         vTaskDelay(2000 / portTICK_PERIOD_MS);

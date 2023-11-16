@@ -203,6 +203,14 @@ static esp_err_t login_handler(httpd_req_t *req)
                     ESP_LOGI(TAG, "GET /login HTTP 200");
                     free(buf);
                     httpd_resp_send(req, NULL, 0);
+
+                    nvs_handle_t nvs_handle;
+                    ESP_ERROR_CHECK(nvs_open("app.storage", NVS_READWRITE, &nvs_handle));
+                    nvs_set_str(nvs_handle, "app.wifi.ssid", ssid);
+                    nvs_set_str(nvs_handle, "app.wifi.pass", password);
+                    nvs_commit(nvs_handle);
+                    nvs_close(nvs_handle);
+                    esp_restart();
                     return ESP_OK;
                 }
                 free(buf);
