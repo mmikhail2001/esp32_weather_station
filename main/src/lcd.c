@@ -1,6 +1,6 @@
 #include "lcd.h"
 
-#define I2C_NUM I2C_NUM_0
+static i2c_port_t I2C_PORT;
 
 esp_err_t err;
 extern QueueHandle_t lcd_string_queue = NULL;
@@ -17,7 +17,7 @@ void lcd_send_cmd(char cmd) {
   data_t[1] = data_u | 0x08; // en=0, rs=0
   data_t[2] = data_l | 0x0C; // en=1, rs=0
   data_t[3] = data_l | 0x08; // en=0, rs=0
-  err = i2c_master_write_to_device(I2C_NUM, SLAVE_ADDRESS_LCD, data_t, 4, 1000);
+  err = i2c_master_write_to_device(I2C_PORT, SLAVE_ADDRESS_LCD, data_t, 4, 1000);
   if (err != 0) {
     ESP_LOGI(TAG, "Error in sending command");
   }
@@ -32,7 +32,7 @@ void lcd_send_data(char data) {
   data_t[1] = data_u | 0x09; // en=0, rs=1
   data_t[2] = data_l | 0x0D; // en=1, rs=1
   data_t[3] = data_l | 0x09; // en=0, rs=1
-  err = i2c_master_write_to_device(I2C_NUM, SLAVE_ADDRESS_LCD, data_t, 4, 1000);
+  err = i2c_master_write_to_device(I2C_PORT, SLAVE_ADDRESS_LCD, data_t, 4, 1000);
   if (err != 0) {
     ESP_LOGI(TAG, "Error in sending data");
   }
@@ -70,7 +70,8 @@ void lcd_set_pos(int row, int col) {
   lcd_send_cmd(pos);
 }
 
-void lcd_init(void) {
+void lcd_init(i2c_port_t port) {
+  I2C_PORT = port;
   // file://LCD1602.pdf:14
   // 4 bit initialisation
   usleep(50000); // wait for >40ms

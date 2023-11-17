@@ -14,5 +14,5 @@ extern QueueHandle_t ws_send_queue;
 extern QueueHandle_t lcd_string_queue;
 
 void lcd_process_queue_task(void *arg);
-void lcd_init(void);
+void lcd_init(i2c_port_t);
 void lcd_clear(void);

@@ -1,7 +1,8 @@
 #include "http_server.h"
 
+#define ACCESS_KEY "bmstu"
+
 static char ssid[64];
-static char access_key[64] = "bmstu";
 static char password[64];
 static httpd_handle_t server = NULL;
 static const char *TAG = "HTTP_SERVER";
@@ -37,7 +38,7 @@ static esp_err_t login_handler(httpd_req_t *req)
 					if (httpd_query_key_value(buf, "access_key", param, sizeof(param)) ==
 						ESP_OK)
 					{
-						if (strcmp(param, access_key) != 0)
+						if (strcmp(param, ACCESS_KEY) != 0)
 						{
 							httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, NULL);
 							free(buf);

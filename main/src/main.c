@@ -5,7 +5,7 @@ static const char *TAG = "main";
 /*
     TODO:
     - lcd_string_queue передавать в качестве параметра в задачи или как
-   глобальную через extern?
+   глобальную через extern? (по хорошему нужен вариант 1)
     - превышение порога газа должно фиксироваться
     + ws
         - передача в заголовке device_id
@@ -121,7 +121,7 @@ void app_main(void) {
 
   // lcd
   // TODO: не возвращает ошибку???
-  lcd_init();
+  lcd_init(I2C_NUM_0);
   lcd_clear();
   vTaskDelay(300 / portTICK_PERIOD_MS);
 

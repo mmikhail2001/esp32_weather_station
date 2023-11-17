@@ -6,6 +6,8 @@
 #include "driver/adc.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include <math.h>
+
 #include "lcd.h"
 
 extern QueueHandle_t lcd_string_queue;
