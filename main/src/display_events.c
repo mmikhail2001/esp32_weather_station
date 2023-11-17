@@ -2,79 +2,44 @@
 
 extern EventGroupHandle_t net_event_group = NULL;
 static const char *TAG = "DISPLAY_EVENTS";
-
+static int STA_STATE = 0;
+static int AP_STATE = 0;
 
 void display_info_task(void) {
-    EventBits_t old_bits = 0;
-    while (true) {
-        EventBits_t bits = xEventGroupWaitBits(net_event_group, 
-            DEFAULT_SET | STA_CONNECTED | WS_SENDING | AP_CONNECTED | HTTP_STARTED,
-            // pdTRUE,
-            pdFALSE,
-            pdFALSE,
-            portMAX_DELAY);
-        EventBits_t edge_triggered_bits = bits ^ old_bits;
-        old_bits = bits;
+  EventBits_t old_bits = 0;
+  while (true) {
+    EventBits_t bits = xEventGroupWaitBits(
+        net_event_group,
+        WIFI_STA_CONNECTED | WIFI_STA_NOT_CONNECTED | WS_SERVER_CONNECTED |
+            WS_SERVER_NOT_CONNECTED | WIFI_AP_STARTED | WIFI_AP_STOPPED |
+            STA_DEVICE_CONNECTED | STA_DEVICE_NOT_CONNECTED,
+        pdTRUE, pdFALSE, portMAX_DELAY);
 
-        if (edge_triggered_bits == 0) {
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            continue;
-        }
-        
-        // ESP_LOGI(TAG, "%x\n", bits);
-
-        int sta_state = 0;
-        int ap_state = 0;
-        
-        if (edge_triggered_bits & WS_SENDING) {
-            if (bits & WS_SENDING) {
-                sta_state = 2;
-            } else {
-                sta_state = 1;
-            }
-        } else if (edge_triggered_bits & STA_CONNECTED) {
-            if (bits & STA_CONNECTED) {
-                sta_state = 1;
-            } else {
-                sta_state = 0;
-            }
-        }
-        
-        if (edge_triggered_bits & HTTP_STARTED) {
-            if (bits & HTTP_STARTED) {
-                ap_state = 2;
-            } else {
-                ap_state = 1;
-            }
-        } else if (edge_triggered_bits & AP_CONNECTED) {
-            if (bits & AP_CONNECTED) {
-                ap_state = 1;
-            } else {
-                ap_state = 0;
-            }
-        }
-
-        // if (bits & STA_DISCONNECTED) {
-        //     sta_state = 0;
-        // } else if (bits & STA_CONNECTED) {
-        //     sta_state = 1;
-        // } else if (bits & WS_SENDING) {
-        //     sta_state = 2;
-        // }
-        
-        // if (bits & AP_DISCONNECTED) {
-        //     ap_state = 0;
-        // } else if (bits & AP_CONNECTED) {
-        //     ap_state = 1;
-        // } else if (bits & HTTP_STARTED) {
-        //     ap_state = 2;
-        // }
-        
-        
-        lcd_data_t lcd_data;
-        lcd_data.col = 17;
-        lcd_data.row = 0;
-        sprintf(lcd_data.str, "%d/%d", sta_state, ap_state);
-        xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+    if (bits & WIFI_STA_CONNECTED) {
+      STA_STATE = 1;
+    } else if (bits & WIFI_STA_NOT_CONNECTED) {
+      STA_STATE = 0;
+    } else if (bits & WS_SERVER_CONNECTED) {
+      STA_STATE = 2;
+    } else if (bits & WS_SERVER_NOT_CONNECTED && STA_STATE == 2) {
+      STA_STATE = 1;
     }
+
+    if (bits & WIFI_AP_STARTED) {
+      AP_STATE = 1;
+    } else if (bits & WIFI_AP_STOPPED) {
+      AP_STATE = 0;
+    } else if (bits & STA_DEVICE_CONNECTED) {
+      ++AP_STATE;
+    } else if (bits & STA_DEVICE_NOT_CONNECTED && AP_STATE >= 2) {
+      --AP_STATE;
+    }
+
+    lcd_data_t lcd_data = {
+        .col = 17,
+        .row = 0,
+    };
+    sprintf(lcd_data.str, "%d/%d", STA_STATE, AP_STATE);
+    xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+  }
 }
