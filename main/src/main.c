@@ -4,35 +4,39 @@ static const char *TAG = "main";
 
 /*
     TODO:
-    - lcd_string_queue передавать в качестве параметра в задачи или как
-   глобальную через extern? (по хорошему нужен вариант 1)
+    ? lcd_string_queue передавать в качестве параметра в задачи или как
+   глобальную через extern (по хорошему нужен вариант 1)
     - превышение порога газа должно фиксироваться
+    - изучение калибровки значений от датчика газа
     + ws
         - передача в заголовке device_id
     + питание
     - tg bot
-    - команда на рестарт по ws
-    - мигание или инфа на лед
-        - не подключен к wifi
-        - подключен к wifi
-        - установлена связь с сервером по ws
+    + команда на рестарт по ws
+    + состояния на lcd
+    - мигать светодиодом во время конфигурации wifi
     + wifi ap и http сервер
     - http сервер передача
-        - показать текущий wifi ssid
-        - при необходимости изменить ssid нужно ввести
-            - пароль от устройства
-            - новый ssid
-            - новый password
-    - изменить событийную систему на эту
-        - sta_connected
-        - sta_disconnected
-        - ws_connected
-        - ws_disconnected
-        - ap_start
-        - ap_end
-        - new_device_connected
-        - device_disconnected
-    - при post запросе формы можно не перезагружать МК
+        + показать текущий wifi ssid
+        + при необходимости изменить ssid нужно ввести
+            + пароль от устройства
+            + новый ssid
+            + новый password
+    + изменить событийную систему на эту
+        + sta_connected
+        + sta_disconnected
+        + ws_connected
+        + ws_disconnected
+        + ap_start
+        + ap_end
+        + new_device_connected
+        + device_disconnected
+    ? при post запросе формы можно не перезагружать МК
+    - рефакторинг
+    - комментарии
+    - код стайл
+    - декомпозиция
+     
 */
 
 extern QueueHandle_t lcd_string_queue;
@@ -105,7 +109,8 @@ void app_main(void) {
   // queues
 
   lcd_string_queue = xQueueCreate(10, sizeof(lcd_data_t));
-  ws_send_queue = xQueueCreate(10, sizeof(lcd_data_t));
+  ws_send_sensors_queue = xQueueCreate(10, sizeof(lcd_data_t));
+  ws_send_stats_queue = xQueueCreate(10, 512);
   button_queue = xQueueCreate(10, sizeof(uint32_t));
 
   // eventGroups
@@ -177,18 +182,12 @@ void app_main(void) {
   xTaskCreate(dht11_read_task, "dht11_read_task", 2048, NULL, 2, NULL);
   xTaskCreate(bmx280_read_task, "bmx280_read_task", 2048, bmx280, 2, NULL);
   xTaskCreate(mq135_read_task, "mq135_read_task", 2048, NULL, 2, NULL);
-  xTaskCreate(ws_send_task, "ws_send_task", 4096, NULL, 2, NULL);
+  xTaskCreate(ws_send_sensors_data_task, "ws_send_sensors_data_task", 4096, NULL, 2, NULL);
+  xTaskCreate(ws_send_stats_task, "ws_send_stats_task", 4096, NULL, 2, NULL);
   xTaskCreate(button_switch_wifi_ap_sta_task, "button_task", 4096, NULL, 10,
               NULL);
   xTaskCreate(display_info_task, "display_info_task", 4096, NULL, 10, NULL);
 
-  // lcd info
-  lcd_data_t lcd_data;
-  lcd_data.col = 10;
-  lcd_data.row = 0;
-  sprintf(lcd_data.str, "sta/ap");
-  xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
-  vTaskDelay(300 / portTICK_PERIOD_MS);
 
   while (1) {
     vTaskDelay(2000 / portTICK_PERIOD_MS);

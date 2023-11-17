@@ -2,6 +2,7 @@
 
 #include "esp_log.h"
 #include "i2c.h"
+#include "ws.h"
 
 typedef struct {
     uint8_t row;
@@ -10,7 +11,7 @@ typedef struct {
 } lcd_data_t;
 
 // TODO: уже есть в файле ws.h
-extern QueueHandle_t ws_send_queue;
+extern QueueHandle_t ws_send_sensors_queue;
 extern QueueHandle_t lcd_string_queue;
 
 void lcd_process_queue_task(void *arg);

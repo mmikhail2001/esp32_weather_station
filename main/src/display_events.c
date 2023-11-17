@@ -6,6 +6,16 @@ static int STA_STATE = 0;
 static int AP_STATE = 0;
 
 void display_info_task(void) {
+
+  lcd_data_t lcd_data = {
+        .col = 10,
+        .row = 0,
+    };
+  sprintf(lcd_data.str, "sta/ap");
+  xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
+  vTaskDelay(300 / portTICK_PERIOD_MS);
+
+  
   EventBits_t old_bits = 0;
   while (true) {
     EventBits_t bits = xEventGroupWaitBits(
@@ -35,10 +45,8 @@ void display_info_task(void) {
       --AP_STATE;
     }
 
-    lcd_data_t lcd_data = {
-        .col = 17,
-        .row = 0,
-    };
+    lcd_data.col = 17;
+    lcd_data.row = 0;
     sprintf(lcd_data.str, "%d/%d", STA_STATE, AP_STATE);
     xQueueSendToBack(lcd_string_queue, &lcd_data, 0);
   }

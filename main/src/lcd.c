@@ -114,7 +114,7 @@ void lcd_process_queue_task(void *arg) {
     if (xQueueReceive(lcd_string_queue, &lcd_data, portMAX_DELAY)) {
       lcd_set_pos(lcd_data.row, lcd_data.col);
       lcd_send_string(lcd_data.str);
-      xQueueSendToBack(ws_send_queue, &lcd_data.str, 0);
+      xQueueSendToBack(ws_send_sensors_queue, &lcd_data.str, 0);
     }
   }
 }
