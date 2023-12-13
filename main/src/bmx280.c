@@ -257,8 +257,8 @@ static esp_err_t bmx280_calibrate(bmx280_t *bmx280) {
   uint8_t buf[26];
 
   // Low Bank
-  err = bmx280_read(bmx280, BMX280_REG_CAL_LO, buf, sizeof buf);
 
+  err = bmx280_read(bmx280, BMX280_REG_CAL_LO, buf, sizeof buf);
   if (err != ESP_OK)
     return err;
 

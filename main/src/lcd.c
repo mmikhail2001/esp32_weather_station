@@ -13,10 +13,10 @@ void lcd_send_cmd(char cmd) {
   uint8_t data_t[4];
   data_u = (cmd & 0xf0);
   data_l = ((cmd << 4) & 0xf0);
-  data_t[0] = data_u | 0x0C; // en=1, rs=0
-  data_t[1] = data_u | 0x08; // en=0, rs=0
-  data_t[2] = data_l | 0x0C; // en=1, rs=0
-  data_t[3] = data_l | 0x08; // en=0, rs=0
+  data_t[0] = data_u | 0x0C; // 1100 en=1, rs=0
+  data_t[1] = data_u | 0x08; // 1000 en=0, rs=0
+  data_t[2] = data_l | 0x0C; // 1100 en=1, rs=0
+  data_t[3] = data_l | 0x08; // 1000 en=0, rs=0
   err = i2c_master_write_to_device(I2C_PORT, SLAVE_ADDRESS_LCD, data_t, 4, 1000);
   if (err != 0) {
     ESP_LOGI(TAG, "Error in sending command");
@@ -75,28 +75,39 @@ void lcd_init(i2c_port_t port) {
   // file://LCD1602.pdf:14
   // 4 bit initialisation
   usleep(50000); // wait for >40ms
-  lcd_send_cmd(0x30);
+  // N = 0 - Использовать одну строку для вывода символов
+  // F = 0 - Размер шрифта 5×8 пикселей
+  // DL = 1 - 8-битный интерфейс ввода/вывода данных
+  lcd_send_cmd(0x30); // 0 0 1 1 = DB7 DB6 DB5 DB4
   usleep(5000); // wait for >4.1ms
   lcd_send_cmd(0x30);
   usleep(200); // wait for >100us
   lcd_send_cmd(0x30);
   usleep(10000);
+  // DL = 0 - 4-битный интерфейс ввода/вывода данных
   lcd_send_cmd(0x20); // 4bit mode
   usleep(10000);
   // file://Хартов_МПС.pdf
   // display initialisation
+  // 0010 1000
   lcd_send_cmd(0x28); // Function set --> DL=0 (4 bit mode), N = 1 (2 line
                       // display) F = 0 (5x8 characters)
   usleep(1000);
-  lcd_send_cmd(
-      0x08); // Display on/off control --> D=0,C=0, B=0  ---> display off
+  // D = 0 - Выключить экран дисплея, сегменты погашены, содержимое внутренней памяти сохраняется
+  // C = 0 - Отключить отображение курсора
+  // B = 0 - Отключить функцию мигания курсора
+  // 0000 1000
+  lcd_send_cmd(0x08); // Display on/off control --> D=0,C=0, B=0  ---> display off
   usleep(1000);
   lcd_send_cmd(0x01); // clear display
   usleep(1000);
   usleep(1000);
-  lcd_send_cmd(
-      0x06); // Entry mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
+  // I/D = 1 - Вывод символов справа-налево, декремент адресного указателя DDRAM/CGRAM памяти
+  // SH = 0 - Запрет сдвига экрана при выводе символов
+  // 0000 0110
+  lcd_send_cmd(0x06); // Entry mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
   usleep(1000);
+  // D = 1 - Включить экран дисплея, нормальный режим работы
   lcd_send_cmd(0x0C); // Display on/off control --> D = 1, C and B = 0. (Cursor
                       // and blink, last two bits)
   usleep(1000);

@@ -59,6 +59,7 @@ void wifi_init_sta(void) {
     strcpy(ssid, TEST_WIFI_SSID);
     strcpy(password, TEST_WIFI_PASS);
 
+    // TODO: нужно ли записывать в NVS тестовые креды???  
     nvs_set_str(nvs_handle, "app.wifi.ssid", ssid);
     nvs_set_str(nvs_handle, "app.wifi.pass", password);
     nvs_commit(nvs_handle);

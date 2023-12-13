@@ -36,7 +36,12 @@ static const char *TAG = "main";
     - комментарии
     - код стайл
     - декомпозиция
-     
+    
+    - all = 210 mA
+    - mq135 = 100 mA
+    - dht11 = 1.6 mA / sec
+    - lcd = 30 mA
+    - bmp280 - 100 mqA / sec
 */
 
 extern QueueHandle_t lcd_string_queue;
